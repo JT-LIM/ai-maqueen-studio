@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI 마퀸 스튜디오 · 손모양, 이미지, 포즈</title>
+  <title>AI 마퀸 스튜디오 · 손모양, 포즈</title>
   <link rel="icon" href="https://raw.githubusercontent.com/boundary-x/ai_teachable_machine/refs/heads/main/Favicon.png"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
@@ -14,12 +14,11 @@
     <div class="title">
       🤖 AI 마퀸 스튜디오
     </div>
-    <p class="subtitle">손모양 · 이미지 · 몸의 포즈로 마퀸을 조작해보세요!</p>
+    <p class="subtitle">손모양 · 몸의 포즈로 마퀸을 조작해보세요!</p>
   </header>
 
   <nav class="mode-nav" aria-label="인식 방식">
     <button data-mode="hand" aria-pressed="true">👋 손모양 학습</button>
-    <button data-mode="image" aria-pressed="false">🖼️ 이미지 모델</button>
     <button data-mode="pose" aria-pressed="false">🧍 포즈 모델</button>
   </nav>
   <p id="mode-description" class="mode-description">손의 관절을 학습합니다. 각 명령 버튼을 길게 눌러 다양한 손모양을 모아주세요.</p>
@@ -71,9 +70,9 @@
           <div id="reset-btn-container"></div>
         </div>
         <div class="control-group" id="tm-panel" hidden>
-          <h3 id="tm-title">🖼️ Teachable Machine 이미지 모델</h3>
+          <h3 id="tm-title">🧍 Teachable Machine 포즈 모델</h3>
           <p>Teachable Machine에서 학습한 모델을 불러와 마퀸 명령에 연결하세요.</p>
-          <ol class="help-steps"><li><a id="tm-link" href="https://teachablemachine.withgoogle.com/train/image" target="_blank" rel="noopener">Teachable Machine에서 학습하기 ↗</a></li><li>모델 내보내기 → TensorFlow.js → 모델 업로드</li><li>공유 링크를 아래에 붙여넣고 불러오기</li></ol>
+          <ol class="help-steps"><li><a id="tm-link" href="https://teachablemachine.withgoogle.com/train/pose" target="_blank" rel="noopener">Teachable Machine에서 학습하기 ↗</a></li><li>모델 내보내기 → TensorFlow.js → 모델 업로드</li><li>공유 링크를 아래에 붙여넣고 불러오기</li></ol>
           <label for="model-url">모델 공유 링크</label>
           <input id="model-url" type="url" placeholder="https://teachablemachine.withgoogle.com/models/…/" autocomplete="off">
           <button id="load-model" class="start-button">모델 불러오기</button>
@@ -114,7 +113,7 @@
       <div class="footer-top">
         <div class="footer-info">
           <h2 class="footer-logo">덕소중학교 AI 마퀸 프로젝트</h2>
-          <p class="slogan">세 가지 AI 인식으로 배우는 마퀸 로봇 수업</p>
+          <p class="slogan">손모양과 포즈 인식으로 배우는 마퀸 로봇 수업</p>
           <address>
             <p class="copyright">© 2024 Deokso Middle School. All rights reserved.</p>
           </address>

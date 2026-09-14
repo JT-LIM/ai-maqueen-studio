@@ -1,9 +1,8 @@
-// @teachablemachine/* 0.8.3 load() returns inference-only models.
-// Its image dispose() assumes a training-only truncatedModel exists;
-// its pose dispose() omits the classification model. Dispose loaded parts explicitly.
+// @teachablemachine/pose 0.8.3 dispose() omits the classification model.
+// Dispose both parts of the loaded pose model explicitly.
 function disposeLoadedModel(model) {
   if (!model) return;
-  for (const part of new Set([model.model, model.posenetModel, model.truncatedModel])) {
+  for (const part of new Set([model.model, model.posenetModel])) {
     if (part && typeof part.dispose === 'function') part.dispose();
   }
 }

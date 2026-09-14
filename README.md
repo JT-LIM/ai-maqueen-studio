@@ -3,15 +3,14 @@
 기존 [AI 손포즈 프로젝트](https://github.com/JT-LIM/ai-handpose-recognition)를 확장한 독립 웹앱입니다.
 
 - 손모양: MediaPipe 손 관절 좌표를 직접 모아 KNN으로 분류합니다.
-- 이미지: Teachable Machine 이미지 모델 공유 링크를 불러옵니다.
 - 포즈: Teachable Machine 포즈 모델 공유 링크를 불러옵니다.
-- 이미지·포즈 클래스마다 `forward`, `backward`, `left`, `right`, `stop` 명령을 선택합니다. 알 수 없는 클래스의 기본값은 정지입니다.
+- 포즈 클래스마다 `forward`, `backward`, `left`, `right`, `stop` 명령을 선택합니다. 알 수 없는 클래스의 기본값은 정지입니다.
 
 ## 사용하기
 
 1. 데스크톱 Chrome 또는 Edge에서 사이트를 열고 카메라를 허용합니다.
 2. 손모양 모드는 정지를 포함해 두 개 이상의 명령을 학습합니다. 정지는 최소 5개 샘플이 필요하며, 각 명령 20개 이상을 다양한 각도에서 모으는 것이 좋습니다.
-3. 이미지·포즈 모드는 해당 탭의 Teachable Machine 링크에서 모델을 학습한 뒤 **모델 내보내기 → TensorFlow.js → 모델 업로드**로 공유 링크를 만듭니다. 링크를 불러온 후 클래스별 명령을 선택합니다. 이미지·포즈 학습 자체는 Teachable Machine에서 진행합니다.
+3. 포즈 모드는 해당 탭의 Teachable Machine 링크에서 모델을 학습한 뒤 **모델 내보내기 → TensorFlow.js → 모델 업로드**로 공유 링크를 만듭니다. 링크를 불러온 후 클래스별 명령을 선택합니다. 포즈 학습 자체는 Teachable Machine에서 진행합니다.
 4. 기존 UART 명령 수신 프로그램이 설치된 마이크로비트와 연결합니다.
 5. **마퀸 조작 시작**을 눌러야 명령이 전송됩니다. **조작 중지**로 중단합니다.
 
@@ -39,7 +38,7 @@ node --check studio.js
 node --test control.test.cjs
 ```
 
-로컬 서버의 `/tests/models.html`은 Google 저장소에 있는 공식 예제 모델을 실제로 불러와 이미지·포즈 추론을 검증합니다. 카메라나 로봇은 사용하지 않습니다.
+로컬 서버의 `/tests/models.html`은 Google 저장소에 있는 공식 예제 모델을 실제로 불러와 포즈 추론을 검증합니다. 카메라나 로봇은 사용하지 않습니다.
 
 ## GitHub Pages
 
