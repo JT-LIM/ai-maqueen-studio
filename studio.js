@@ -211,23 +211,51 @@ window.addEventListener('blur', () => {
 window.addEventListener('pagehide', () => { if (btDataDisplay) stopTracking(); });
 setTimeout(tmLoop, 500);
 
+function stopCamera(message = '카메라가 중지되었습니다. 다시 시작할 수 있어요.') {
+  // Invalidate any prediction that was awaiting the model when the camera stopped.
+  modeGeneration++;
+  stopTracking();
+  isTraining = false;
+  currentGestureLabel = null;
+  lastLandmarks = null;
+  lastPredictionTime = 0;
+  lastHandFrameTime = 0;
+  lastVideoTime = -1;
+  lastTmVideoTime = -1;
+  document.querySelectorAll('.gesture-btn').forEach(button => button.classList.remove('learning'));
+  const element = video.elt;
+  const stream = element.srcObject;
+  element.pause();
+  element.srcObject = null;
+  stream?.getTracks().forEach(track => track.stop());
+  tmContext.clearRect(0, 0, tmFrame.width, tmFrame.height);
+  resultLabel.html('대기 중');
+  resultConf.html('카메라 중지됨');
+  const button = byId('start-camera');
+  button.disabled = false;
+  button.textContent = '📷 카메라 시작';
+  byId('camera-status').textContent = message;
+}
+
 byId('start-camera').addEventListener('click', async () => {
   const button = byId('start-camera');
+  if (video.elt.srcObject) {
+    stopCamera();
+    return;
+  }
   button.disabled = true;
   try {
     const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:320,height:240},audio:false});
     video.elt.srcObject = stream;
     await video.elt.play();
-    byId('camera-status').textContent = '✅ 카메라 준비 완료';
-    button.textContent = '📷 카메라 사용 중';
+    byId('camera-status').textContent = '✅ 카메라 사용 중 · 아래 버튼으로 중지할 수 있어요.';
+    button.textContent = '⏹️ 카메라 중지';
     stream.getVideoTracks().forEach(track => track.addEventListener('ended', () => {
-      stopTracking();
-      button.disabled = false;
-      button.textContent = '📷 카메라 다시 시작';
-      byId('camera-status').textContent = '카메라 연결이 끊겼습니다.';
+      if (video.elt.srcObject === stream) stopCamera('카메라 연결이 끊겼습니다. 다시 시작해주세요.');
     }));
   } catch (error) {
+    stopCamera(`카메라를 열지 못했습니다. 브라우저의 카메라 권한과 연결을 확인해주세요. (${error.name})`);
+  } finally {
     button.disabled = false;
-    byId('camera-status').textContent = `카메라를 열지 못했습니다. 브라우저의 카메라 권한과 연결을 확인해주세요. (${error.name})`;
   }
 });
