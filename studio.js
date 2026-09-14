@@ -62,7 +62,7 @@ async function loadTeachableModel() {
     if (labels.length < 2) throw new Error('두 가지 이상의 클래스를 학습한 모델이 필요합니다.');
     // In-flight inference retains its own model reference; wait before disposing it.
     while (tmBusy) await new Promise(resolve => setTimeout(resolve, 30));
-    tmModels[mode]?.dispose();
+    disposeLoadedModel(tmModels[mode]);
     tmModels[mode] = nextModel;
     nextModel = null;
     modelUrls[mode] = base;
@@ -74,7 +74,7 @@ async function loadTeachableModel() {
     }
     if (connectBtn) { connectBtn.removeAttribute('disabled'); connectBtn.html('기기 연결'); }
   } catch (error) {
-    nextModel?.dispose();
+    disposeLoadedModel(nextModel);
     if (activeMode === mode) byId('model-status').textContent = `불러오기 실패: ${error.message} 이미지/포즈 종류와 모델 업로드 여부를 확인해주세요.`;
   } finally {
     modelLoading = false;
@@ -210,3 +210,24 @@ window.addEventListener('blur', () => {
 });
 window.addEventListener('pagehide', () => { if (btDataDisplay) stopTracking(); });
 setTimeout(tmLoop, 500);
+
+byId('start-camera').addEventListener('click', async () => {
+  const button = byId('start-camera');
+  button.disabled = true;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:320,height:240},audio:false});
+    video.elt.srcObject = stream;
+    await video.elt.play();
+    byId('camera-status').textContent = '✅ 카메라 준비 완료';
+    button.textContent = '📷 카메라 사용 중';
+    stream.getVideoTracks().forEach(track => track.addEventListener('ended', () => {
+      stopTracking();
+      button.disabled = false;
+      button.textContent = '📷 카메라 다시 시작';
+      byId('camera-status').textContent = '카메라 연결이 끊겼습니다.';
+    }));
+  } catch (error) {
+    button.disabled = false;
+    byId('camera-status').textContent = `카메라를 열지 못했습니다. 브라우저의 카메라 권한과 연결을 확인해주세요. (${error.name})`;
+  }
+});

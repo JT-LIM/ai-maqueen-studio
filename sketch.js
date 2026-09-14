@@ -67,10 +67,9 @@ function setup() {
   let canvas = createCanvas(320, 240);
   canvas.parent("p5-container");
 
-  video = createCapture({
-    video: { facingMode: "user", width: 320, height: 240 },
-    audio: false
-  });
+  video = createVideo([]);
+  video.elt.muted = true;
+  video.elt.playsInline = true;
   video.size(320, 240);
   video.hide();
 

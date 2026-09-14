@@ -273,3 +273,12 @@ address { color: #888; font-style: normal; line-height: 1.6; }
 button:focus-visible, input:focus-visible, select:focus-visible { outline:3px solid #c3f279; outline-offset:3px; }
 button:disabled { opacity:.5; cursor:wait; }
 .gesture-btn { touch-action:none; user-select:none; }
+.mode-nav button { min-width:170px; width:auto; white-space:nowrap; }
+.mode-description, .small-note, .help-steps { color:#536173; }
+#tm-panel a { color:#225cb6; }
+#start-camera { margin-top:12px; width:100%; }
+#camera-status { margin:8px 0 16px; }
+@media (max-width:600px) {
+  .mode-nav { gap:8px; }
+  .mode-nav button { min-width:0; padding:12px 10px; font-size:13px; flex:1; }
+}
