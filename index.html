@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 마퀸 스튜디오 · 손모양, 이미지, 포즈</title>
+  <link rel="icon" href="https://raw.githubusercontent.com/boundary-x/ai_teachable_machine/refs/heads/main/Favicon.png"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="title">
+      🤖 AI 마퀸 스튜디오
+    </div>
+    <p class="subtitle">손모양 · 이미지 · 몸의 포즈로 마퀸을 조작해보세요!</p>
+  </header>
+
+  <nav class="mode-nav" aria-label="인식 방식">
+    <button data-mode="hand" aria-pressed="true">👋 손모양 학습</button>
+    <button data-mode="image" aria-pressed="false">🖼️ 이미지 모델</button>
+    <button data-mode="pose" aria-pressed="false">🧍 포즈 모델</button>
+  </nav>
+  <p id="mode-description" class="mode-description">손의 관절을 학습합니다. 각 명령 버튼을 길게 눌러 다양한 손모양을 모아주세요.</p>
+  <main>
+    <!-- 카메라와 인식 결과를 함께 감싸기 -->
+    <div class="camera-section">
+      <div class="canvas-wrapper">
+        <div id="p5-container" class="canvas-container"></div>
+        <div id="status-badge" class="status-badge">모델 로딩 중...</div>
+      </div>
+
+      <!-- 인식 결과: 카메라 바로 아래 -->
+      <div class="control-group recognition-result-group">
+        <h3>📊 실시간 인식 결과</h3>
+        <div class="result-box">
+          <div id="result-label" class="result-text">대기 중</div>
+          <div id="result-conf" class="result-sub">데이터 부족</div>
+        </div>
+        <div id="bluetooth-data-display" class="data-display">전송 데이터: 대기 중...</div>
+      </div>
+    </div>
+
+    <section class="controls">
+
+      <!-- 왼쪽 컬럼: 제스처 학습 -->
+      <div class="controls-col controls-col-left">
+        <div class="control-group" id="hand-panel">
+          <h3>👋 마퀸 조작 제스처 학습</h3>
+          <p>아래 버튼 중 하나를 선택하고 손동작을 보여주세요. 버튼을 <strong>길게 눌러서</strong> 학습시킵니다.</p>
+
+          <!-- 제스처 선택 버튼 -->
+          <div id="gesture-buttons" class="gesture-button-group">
+            <button class="gesture-btn" id="btn-forward">⬆️<br/><span class="btn-label">앞으로</span></button>
+            <button class="gesture-btn" id="btn-backward">⬇️<br/><span class="btn-label">뒤로</span></button>
+            <button class="gesture-btn" id="btn-left">⬅️<br/><span class="btn-label">왼쪽</span></button>
+            <button class="gesture-btn" id="btn-right">➡️<br/><span class="btn-label">오른쪽</span></button>
+            <button class="gesture-btn" id="btn-stop">⏹️<br/><span class="btn-label">정지</span></button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div id="training-list" class="class-list">
+            <div class="empty-msg">아직 학습된 데이터가 없습니다.</div>
+          </div>
+
+          <!-- 초기화 버튼: p5.js가 생성해서 삽입 -->
+          <div id="reset-btn-container"></div>
+        </div>
+        <div class="control-group" id="tm-panel" hidden>
+          <h3 id="tm-title">🖼️ Teachable Machine 이미지 모델</h3>
+          <p>Teachable Machine에서 학습한 모델을 불러와 마퀸 명령에 연결하세요.</p>
+          <ol class="help-steps"><li><a id="tm-link" href="https://teachablemachine.withgoogle.com/train/image" target="_blank" rel="noopener">Teachable Machine에서 학습하기 ↗</a></li><li>모델 내보내기 → TensorFlow.js → 모델 업로드</li><li>공유 링크를 아래에 붙여넣고 불러오기</li></ol>
+          <label for="model-url">모델 공유 링크</label>
+          <input id="model-url" type="url" placeholder="https://teachablemachine.withgoogle.com/models/…/" autocomplete="off">
+          <button id="load-model" class="start-button">모델 불러오기</button>
+          <p id="model-status" role="status">아직 불러온 모델이 없습니다.</p>
+          <div id="class-mapping" class="class-mapping"></div>
+          <p class="small-note">연결하지 않은 클래스는 정지로 처리됩니다. 정지용 클래스도 함께 학습해주세요.</p>
+        </div>
+      </div>
+
+      <!-- 오른쪽 컬럼: 1단계 마이크로비트 연결 & 2단계 마퀸 조작 시작 -->
+      <div class="controls-col controls-col-right">
+        <div class="control-group">
+          <h3>🔌 1단계: 마이크로비트 연결</h3>
+          <p>블루투스 연결 버튼을 클릭해 마이크로비트와 마퀸을 연결해주세요.<br/>
+          💡 마이크로비트에는 MakeCode 프로그램이 미리 설치되어 있어야 합니다.</p>
+          <div id="bluetoothStatus" class="status-box">상태: 연결 대기 중</div>
+          <!-- 블루투스 버튼: p5.js가 생성해서 삽입 -->
+          <div id="bluetooth-control-buttons" class="button-group" style="margin-top: 15px;"></div>
+        </div>
+
+        <div class="control-group">
+          <h3>🎮 2단계: 마퀸 조작 시작</h3>
+          <p>선택한 인식 방식으로 마퀸이 움직입니다!<br/>
+          📍 모델 준비와 기기 연결을 완료한 후 시작하세요.</p>
+          <label for="threshold">명령 인식 기준: <output id="threshold-value">80%</output></label>
+          <input id="threshold" type="range" min="50" max="100" value="80" step="5">
+          <p class="small-note">기준 미달, 인식 끊김, 모드 변경 시 정지 명령을 보냅니다.</p>
+          <!-- 인식 제어 버튼: p5.js가 생성해서 삽입 -->
+          <div id="recognition-control-buttons" class="button-group"></div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-container">
+      <div class="footer-top">
+        <div class="footer-info">
+          <h2 class="footer-logo">덕소중학교 AI 마퀸 프로젝트</h2>
+          <p class="slogan">세 가지 AI 인식으로 배우는 마퀸 로봇 수업</p>
+          <address>
+            <p class="copyright">© 2024 Deokso Middle School. All rights reserved.</p>
+          </address>
+        </div>
+        <div class="footer-links">
+          <div class="link-column">
+            <h4>학습 단계</h4>
+            <ul>
+              <li><span class="link-desc">1️⃣ 인식 방식과 모델 준비</span></li>
+              <li><span class="link-desc">2️⃣ 마이크로비트 연결</span></li>
+              <li><span class="link-desc">3️⃣ 마퀸 조작 시작</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="control.js"></script>
+  <script src="sketch.js"></script>
+  <script src="studio.js"></script>
+</body>
+</html>

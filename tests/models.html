@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8"><title>Model integration smoke test</title>
+<h1>Teachable Machine integration test</h1><pre id="result">Loading…</pre><canvas id="input" width="224" height="224"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.3/dist/teachablemachine-image.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8.3/dist/teachablemachine-pose.min.js"></script>
+<script>
+(async () => {
+  const log = document.getElementById('result');
+  const canvas = document.getElementById('input');
+  canvas.getContext('2d').fillRect(0, 0, 224, 224);
+  try {
+    const imageBase = 'https://teachablemachine.withgoogle.com/models/HN9AsmOl/';
+    const imageModel = await tmImage.load(imageBase + 'model.json', imageBase + 'metadata.json');
+    const imageResult = await imageModel.predict(canvas);
+    if (imageResult.length !== imageModel.getClassLabels().length || imageResult.some(x => !Number.isFinite(x.probability))) throw new Error('Invalid image prediction');
+    log.textContent = 'PASS image load, class labels and real inference\n';
+    imageModel.dispose();
+    const poseBase = 'https://teachablemachine.withgoogle.com/models/M4cegN5A/';
+    const poseModel = await tmPose.load(poseBase + 'model.json', poseBase + 'metadata.json');
+    const {posenetOutput} = await poseModel.estimatePose(canvas);
+    const poseResult = await poseModel.predict(posenetOutput);
+    if (poseResult.length !== poseModel.getClassLabels().length || poseResult.some(x => !Number.isFinite(x.probability))) throw new Error('Invalid pose prediction');
+    poseModel.dispose();
+    log.textContent += 'PASS pose load, estimation and real inference\nPASS model disposal and shared TensorFlow runtime';
+  } catch (error) { log.textContent += '\nFAIL ' + error.message; }
+})();
+</script>
